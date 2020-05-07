@@ -42,12 +42,12 @@ def main():
         ind = (i % numsensors) + 1
         sensors[ind] = readsensor(sensors, ind)
         payload = str(ind) + ":" + str(sensors[ind]) + '\n'
-        #print(str(datetime.now()) + ": " + payload)
+        # print(str(datetime.now()) + ": " + payload)
         data = bytearray(payload, encoding='utf-8')
         for d in data:
             db = d.to_bytes(1, 'big')
             ser.write(db)
-            sleep(1/9600*8)
+            sleep(1 / 9600 * 8)
     ser.close()
 
 
