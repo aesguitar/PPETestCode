@@ -1,6 +1,8 @@
 import serial
 from random import uniform
 from time import sleep
+import os
+import psutil
 
 # ***********NOTE************
 # run 'socat -d -d pty,raw,echo=0,b9600 pty,raw,echo=0,b9600'
@@ -34,11 +36,15 @@ def readsensor(sensors, number):
 
 
 def main():
+    parentid = os.getppid()
     numsensors = 8
     ser = openserialport()
     sensors = createsensors(numsensors)
-    loops = int(len(sensors) * 200)
+    loops = int(len(sensors) * 2000)
     for i in range(loops):
+        if psutil.Process(parentid).status() != psutil.STATUS_RUNNING:
+            ser.reset_output_buffer()
+            break
         ind = (i % numsensors) + 1
         sensors[ind] = readsensor(sensors, ind)
         payload = str(ind) + ":" + str(sensors[ind]) + '\n'
