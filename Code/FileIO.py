@@ -1,7 +1,12 @@
 from datetime import datetime
 import serial
 from time import sleep
-import subprocess as sp
+
+# run time in seconds
+runTime = 5
+
+# logger update rate
+updateRate = 1
 
 
 def openserialport(portname):
@@ -34,11 +39,12 @@ def waitforupdate(time, ser):
         sleep(clearrate)
 
 
-def main():
+def main():    
     period = 1
     ser = openserialport('/dev/pts/1')
+    #ser = openserialport('/dev/ttyACM0')
     sensdict = {"0": "0"}
-    logfile = openfile('TestLogs/'
+    logfile = openfile('../TestLogs/'
                        + datetime.now().strftime("%y%m%d_%H%M%S")
                        + ".csv")
     # enumerate sensors
@@ -70,7 +76,7 @@ def main():
             s = line[:-1].split(":")
             sensors[s[0]] = s[1]
         dictstring = str(sensors.values())
-        data = str(now) + ", " + dictstring[13:-2].replace("'", "") + "\n"
+        data = str(now) + "," + dictstring[13:-2].replace("'", "").replace('\\',"").replace('r', '').replace(' ','') + "\n"
         # print(str(now) + ", " + dictstring[13:-2].replace("'", ""))
         logfile.write(data)
         waitforupdate(period, ser)
