@@ -19,7 +19,7 @@ the following rules:
 3. If temperature is below a cold cut-off, the cycle pauses, but continues to record.
 
 TODO:
-Individual sensor cycle tracking
-Fractional tick at end of cycle
-GUI using the Matplotlib python module
-Notification/Alert for cycle abort/pause.
+1. Individual sensor cycle tracking
+2. Fractional tick at end of cycle
+3. GUI using the Matplotlib python module
+4. Notification/Alert for cycle abort/pause.
