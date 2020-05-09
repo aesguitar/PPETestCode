@@ -1,5 +1,5 @@
 import serial
-from random import uniform
+from random import uniform, normalvariate
 from time import sleep
 import os
 import psutil
@@ -9,8 +9,8 @@ import psutil
 # before executing. This sets up a serial port this program
 # can write to in order to emulate the arduino output to the
 # pi.
-rrange = [15, 25]
-
+tempmean = 21
+stddev = 1.1
 
 def openserialport():
     serport = "/dev/pts/2"
@@ -23,28 +23,28 @@ def openserialport():
 def createsensors(number):
     sdict = {0: 0}
     for i in range(1, number + 1):
-        sdict[i] = round(uniform(rrange[0], rrange[1]), 2)
+        sdict[i] = round(normalvariate(tempmean, stddev), 2)
     del sdict[0]
     return sdict
 
 
 def readsensor(sensors, number):
     if number in sensors:
-        return round(uniform(rrange[0], rrange[1]), 2)
+        return round(normalvariate(tempmean, stddev), 2)
     else:
         return 0
 
 
 def main():
-    parentid = os.getppid()
+    # parentid = os.getppid()
     numsensors = 8
     ser = openserialport()
     sensors = createsensors(numsensors)
-    loops = int(len(sensors) * 2000)
+    loops = int(len(sensors) * 50000)
     for i in range(loops):
-        if psutil.Process(parentid).status() != psutil.STATUS_RUNNING:
-            ser.reset_output_buffer()
-            break
+        # if psutil.Process(parentid).status() != psutil.STATUS_RUNNING:
+        #     ser.reset_output_buffer()
+        #     break
         ind = (i % numsensors) + 1
         sensors[ind] = readsensor(sensors, ind)
         payload = str(ind) + ":" + str(sensors[ind]) + '\n'
