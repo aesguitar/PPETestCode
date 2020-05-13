@@ -9,6 +9,9 @@ import psutil
 # before executing. This sets up a serial port this program
 # can write to in order to emulate the arduino output to the
 # pi.
+#
+# Make sure the serport variable represents the serial port
+# that the above command set up.
 tempmean = 21
 stddev = 1.1
 
