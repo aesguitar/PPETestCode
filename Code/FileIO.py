@@ -20,8 +20,8 @@ runTime = 5
 # logger update rate
 updateRate = 1
 
-
 current_milli_time = lambda: int(round(time() * 1000))
+
 
 def openserialport(portname):
     ser = serial.Serial(portname, 9600, rtscts=True, dsrdtr=True, timeout=1)
@@ -59,7 +59,7 @@ def waitforupdate(time, ser):
 # checks the received temperatures and outputs states according the boundary variables
 def checktemps(sensors):
     for i in sensors.keys():
-        tmp = float(sensors[i]["temp"].replace("\n",""))
+        tmp = float(sensors[i]["temp"].replace("\n", ""))
         if sensors[i]["state"] != COMPLETE:
             if sensors[i]["ticks"] <= 0:
                 sensors[i]["state"] = COMPLETE
@@ -129,24 +129,25 @@ def main():
                                                "SOMD Loves You.")
     parser.add_option("-u", action="store", dest="u", type=float, default=.5)
     parser.add_option("-r", action="store", dest="r", type=float, default=5)
+    parser.add_option("-f", action="store", dest="f", type=str, default='../TestLogs/'
+                                                                        + datetime.now().strftime("%y%m%d_%H%M%S")
+                                                                        + ".csv")
 
     options, args = parser.parse_args()
     updateRate = options.u
     runTime = options.r
+    filename = options.f
     ticks = int(round(runTime / updateRate)) * 33
 
     ser = openserialport('/dev/pts/1')
     # ser = openserialport('/dev/ttyACM0')
     sensdict = dict()
-    logfile = openfile('../TestLogs/'
-                       + datetime.now().strftime("%y%m%d_%H%M%S")
-                       + ".csv")
+    logfile = openfile(filename)
     # enumerate sensors
     loops = 16
     ser.reset_input_buffer()
     ser.readline()
 
-    done = dict()
     while True:
         line = str(ser.readline(), encoding='utf-8', errors='ignore')
         s = line.split(":")
@@ -165,6 +166,7 @@ def main():
     sensors = checktemps(sensors)
     print(sensorsstring(sensors))
     writecolumndeaders(logfile, sensors)
+
     while not checkdone(sensors):
         st = current_milli_time()
         now = datetime.now().strftime("%H:%M:%S")
@@ -180,10 +182,9 @@ def main():
         logfile.write(data)
         sensors = ticksLeft(sensors)
         et = current_milli_time()
-        rt = et-st
+        rt = et - st
         if rt > 0:
-            waitforupdate((updateRate*1000-rt)/1000, ser)
-
+            waitforupdate((updateRate * 1000 - rt) / 1000, ser)
 
     ser.close()
     logfile.close()
