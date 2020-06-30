@@ -114,7 +114,7 @@ def checkdone(sensors):
     return done
 
 
-def writecolumndeaders(file, sensors):
+def writecolumnheaders(file, sensors):
     header = "timestamp,"
     for i in sensors.keys():
         header += "Sensor " + i + " Temperature,"
@@ -165,7 +165,7 @@ def main():
         sensors[tmp1] = sensdict[tmp1]
     sensors = checktemps(sensors)
     print(sensorsstring(sensors))
-    writecolumndeaders(logfile, sensors)
+    writecolumnheaders(logfile, sensors)
 
     while not checkdone(sensors):
         st = current_milli_time()

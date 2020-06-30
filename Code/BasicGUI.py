@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
-import FileIO
 import serial
-
+from datetime import datetime
+from Code.FileIO import *
 
 def getnumsensors(devname):
     ser = serial.Serial(devname, 9600, rtscts=True, dsrdtr=True, timeout=1)
@@ -44,7 +44,14 @@ def chooseMode():
     return mode
 
 def buildlayout(numsensors):
-    return ""
+    # create row of sensor values dynamically
+    sensorlabels = []
+    for i in range(numsensors):
+        sensorlabels.append(sg.Text(str(i), key="-" + str(i) + "TEMP-"))
+
+    layout = [[sg.Text("Sensor Outputs:")],
+        [*sensorlabels]]
+    return layout
 
 
 def main():
@@ -60,16 +67,27 @@ def main():
     print("Found " + str(numsens) + " sensors.")
 
     layout = [[sg.Text("FileIO Output: ")],
-              [sg.Multiline(size=(120, 20), key='-LOG-')]
-              [sg.Button('Cancel', key='-CANCEL-')]]
+              [sg.Multiline(size=(120, 20), key="-LOG-")],
+              [sg.Button("Cancel", key="-CANCEL-")]]
 
+    #layout  = buildlayout(numsens)
     window = sg.Window("Test Window", layout)
 
     while True:
+        #st = current_milli_time()
+        #now = datetime.now().strftime("%H:%M:%S")
+
+        #clearbuffer(ser)
+        #for j in range(len(sensors)):
+        #    line = str(ser.readline(), 'utf-8', 'ignore')
+        #    s = line[:-1].split(":")
+        #    sensors[s[0]]["temp"] = s[1]
+        #sensors = checktemps(sensors)
+
         event, values = window.read()
-        if event in (None, 'Cancel'):
+        if event in (None, "-CANCEL-"): # must use key name for event
             break
-    window.close
+    window.close()
 
 if __name__ == '__main__':
     main()
