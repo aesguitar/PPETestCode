@@ -20,6 +20,9 @@ runTime = 5
 # logger update rate
 updateRate = 1
 
+# global sensor data dictionary
+sensors = {}
+
 current_milli_time = lambda: int(round(time() * 1000))
 
 
@@ -125,6 +128,7 @@ def writecolumnheaders(file, sensors):
 
 
 def main():
+    global sensors
     parser = optparse.OptionParser(description="Temperature logging utility for the PPE Sterilization Project\nwith" +
                                                "SOMD Loves You.")
     parser.add_option("-u", action="store", dest="u", type=float, default=.5)
