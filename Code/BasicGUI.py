@@ -5,6 +5,14 @@ from time import sleep
 
 import Code.FileIO
 
+colorswitcher = {
+    Code.FileIO.LOW_FAIL: "blue",
+    Code.FileIO.LOW_WARN: "lightblue",
+    Code.FileIO.GOOD: "green",
+    Code.FileIO.HIGH_FAIL: "red",
+    Code.FileIO.COMPLETE: "purple"
+}
+
 # def getnumsensors(devname):
 #     ser = serial.Serial(devname, 9600, rtscts=True, dsrdtr=True, timeout=1)
 #     ser.reset_input_buffer()
@@ -53,7 +61,7 @@ def buildlayout(numsensors):
     # create row of sensor values dynamically
     sensorlabels = []
     for i in range(numsensors):
-        sensorlabels.append(sg.Text(str(i + 1), size=(4, 1), key="-" + str(i + 1) + "TEMP-"))
+        sensorlabels.append(sg.Text(str(i + 1), size=(5, 1), text_color="white", background_color="grey", key="-" + str(i + 1) + "TEMP-"))
 
     layout = [[sg.Text("Sensor Outputs:")],
         [*sensorlabels]]
@@ -88,7 +96,8 @@ def main():
         #    break
         for i in range (numsens):
             #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
-            window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"])
+            bgcolor = (Code.FileIO.sensors[str(i + 1)]["state"])
+            window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "grey"))
     window.close()
 
 if __name__ == '__main__':
