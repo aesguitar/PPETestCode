@@ -5,6 +5,14 @@ from time import sleep
 
 import Code.FileIO
 
+stateswitcher = {
+    Code.FileIO.LOW_FAIL: "low fail!",
+    Code.FileIO.LOW_WARN: "low warn",
+    Code.FileIO.GOOD: "good",
+    Code.FileIO.HIGH_FAIL: "high fail!",
+    Code.FileIO.COMPLETE: "complete"
+}
+
 colorswitcher = {
     Code.FileIO.LOW_FAIL: "blue",
     Code.FileIO.LOW_WARN: "lightblue",
@@ -59,12 +67,16 @@ def chooseMode():
 
 def buildlayout(numsensors):
     # create row of sensor values dynamically
-    sensorlabels = []
+    sensortext = []
+    sensorvalues = []
     for i in range(numsensors):
-        sensorlabels.append(sg.Text(str(i + 1), size=(5, 1), text_color="white", background_color="grey", key="-" + str(i + 1) + "TEMP-"))
+        sensortext.append(sg.Text(str(i + 1), size=(11, 1), text_color="white", key="-" + str(i + 1) + "INFO-"))
+    for i in range(numsensors):
+        sensorvalues.append(sg.Text(str(i + 1), size=(11, 1), text_color="white", background_color="grey", key="-" + str(i + 1) + "TEMP-"))
 
     layout = [[sg.Text("Sensor Outputs:")],
-        [*sensorlabels]]
+        [*sensortext],
+        [*sensorvalues]]
     return layout
 
 
@@ -96,7 +108,7 @@ def main():
         #    break
         for i in range (numsens):
             #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
-            bgcolor = (Code.FileIO.sensors[str(i + 1)]["state"])
+            window["-" + str(i + 1) + "INFO-"].update(str (i + 1) + ": " + stateswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "unknown"))
             window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "grey"))
     window.close()
 
