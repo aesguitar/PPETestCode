@@ -2,6 +2,8 @@ import PySimpleGUI as sg
 import serial
 import threading
 from time import sleep
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
+from matplotlib.figure import Figure
 
 import Code.FileIO
 
@@ -69,21 +71,29 @@ def buildlayout(numsensors):
     # create row of sensor values dynamically
     sensortext = []
     sensorvalues = []
+    #sensorcanvases = []
+
     for i in range(numsensors):
         sensortext.append(sg.Text(str(i + 1), size=(11, 1), text_color="white", key="-" + str(i + 1) + "INFO-"))
     for i in range(numsensors):
         sensorvalues.append(sg.Text(str(i + 1), size=(11, 1), text_color="white", background_color="grey", key="-" + str(i + 1) + "TEMP-"))
+    #for i in range(numsensors):
+    #    sensorcanvases.append(sg.Canvas(size=(20, 20), key="-" + str(i + 1) + "CANVAS-"))
 
-    layout = [[sg.Text("Sensor Outputs:")],
+    layout = [[sg.Button("Start")],
+        [sg.Text("Sensor Outputs:")],
         [*sensortext],
-        [*sensorvalues]]
+        [*sensorvalues],
+        #[*sensorcanvases]
+        [sg.Text("Time remaining: 00:00:00", key="-TIMEREMAINING-")]]
+
     return layout
 
 
 def main():
-    loggerThread = threading.Thread(target=Code.FileIO.main, name="logging")
-    loggerThread.daemon = True
-    loggerThread.start()
+    loggerthread = threading.Thread(target=Code.FileIO.main, name="logging")
+    loggerthread.daemon = True
+    loggerthread.start()
 
     mode = chooseMode()
     serialname = ""
@@ -108,8 +118,9 @@ def main():
         #    break
         for i in range (numsens):
             #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
-            window["-" + str(i + 1) + "INFO-"].update(str (i + 1) + ": " + stateswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "unknown"))
+            window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "unknown"))
             window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "grey"))
+        window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format(round(Code.FileIO.timeLeft / 3600) % 60) + ":" + "{:0>2d}".format(round(Code.FileIO.timeLeft / 60) % 60) + ":" + "{:0>2d}".format(Code.FileIO.timeLeft % 60))
     window.close()
 
 if __name__ == '__main__':

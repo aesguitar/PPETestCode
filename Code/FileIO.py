@@ -20,6 +20,9 @@ runTime = 5
 # logger update rate
 updateRate = 1
 
+# global time left
+timeLeft = runTime
+
 # global sensor data dictionary
 sensors = {}
 
@@ -78,8 +81,11 @@ def checktemps(sensors):
 
 
 # decrements the tick counter according to the state of the sensor temperature
+# TODO: change all ticks to 0 when one sensor high fails?
 def ticksLeft(sensors):
+    global timeLeft
     highfail = False
+    maxticks = 0
     for i in sensors.keys():
         if ~highfail:
             if sensors[i]["state"] == HIGH_FAIL:
@@ -92,6 +98,9 @@ def ticksLeft(sensors):
                 sensors[i]["ticks"] -= 33
         else:
             sensors[i]["ticks"] = 0
+        if sensors[i]["ticks"] > maxticks:
+            maxticks = sensors[i]["ticks"]
+    timeLeft = round(maxticks / 33) * updateRate
     return sensors
 
 
@@ -129,6 +138,7 @@ def writecolumnheaders(file, sensors):
 
 def main():
     global sensors
+    global timeLeft
     parser = optparse.OptionParser(description="Temperature logging utility for the PPE Sterilization Project\nwith" +
                                                "SOMD Loves You.")
     parser.add_option("-u", action="store", dest="u", type=float, default=.5)
@@ -140,6 +150,7 @@ def main():
     options, args = parser.parse_args()
     updateRate = options.u
     runTime = options.r
+    timeLeft = runTime
     filename = options.f
     ticks = int(round(runTime / updateRate)) * 33
 
@@ -190,6 +201,7 @@ def main():
         if rt > 0:
             waitforupdate((updateRate * 1000 - rt) / 1000, ser)
 
+    timeLeft = 0
     ser.close()
     logfile.close()
 
