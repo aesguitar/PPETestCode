@@ -3,7 +3,11 @@ import serial
 from datetime import datetime
 from time import sleep, time
 
-# run states
+# data acquisition run statues
+STOPPED = 0
+RUNNING = 1
+
+# sensor run states
 LOW_FAIL = 0
 LOW_WARN = 1
 GOOD = 2
@@ -15,18 +19,22 @@ LOW_WARN_TEMP = 18.5
 HIGH_FAIL_TEMP = 24
 
 # run time in seconds
-runTime = 5
+runtime = 60
 
 # logger update rate
-updateRate = 1
+updaterate = 1
 
 # global time left
-timeLeft = runTime
+timeleft = runtime
 
 # global sensor data dictionary
 sensors = {}
 
 current_milli_time = lambda: int(round(time() * 1000))
+
+loggingready = False
+loggingstarted = False
+loggingreset = False
 
 
 def openserialport(portname):
@@ -82,12 +90,12 @@ def checktemps(sensors):
 
 # decrements the tick counter according to the state of the sensor temperature
 # TODO: change all ticks to 0 when one sensor high fails?
-def ticksLeft(sensors):
-    global timeLeft
+def ticksleft(sensors):
+    global timeleft
     highfail = False
     maxticks = 0
     for i in sensors.keys():
-        if ~highfail:
+        if not highfail:
             if sensors[i]["state"] == HIGH_FAIL:
                 highfail = True
             elif sensors[i]["state"] == LOW_FAIL or sensors[i]["state"] == COMPLETE:
@@ -100,7 +108,7 @@ def ticksLeft(sensors):
             sensors[i]["ticks"] = 0
         if sensors[i]["ticks"] > maxticks:
             maxticks = sensors[i]["ticks"]
-    timeLeft = round(maxticks / 33) * updateRate
+    timeleft = round(maxticks / 33) * updaterate
     return sensors
 
 
@@ -113,6 +121,8 @@ def sensorsstring(sensors):
 
 
 def checkdone(sensors):
+    if len(sensors) == 0:
+        return False
     done = True
     for i in sensors.keys():
         if sensors[i]["state"] == HIGH_FAIL:
@@ -136,9 +146,15 @@ def writecolumnheaders(file, sensors):
     file.write(header)
 
 
-def main():
+def startlogging(ser):
     global sensors
-    global timeLeft
+    global updaterate
+    global runtime
+    global timeleft
+    global loggingready
+
+    loggingready = False
+
     parser = optparse.OptionParser(description="Temperature logging utility for the PPE Sterilization Project\nwith" +
                                                "SOMD Loves You.")
     parser.add_option("-u", action="store", dest="u", type=float, default=.5)
@@ -148,14 +164,12 @@ def main():
                                                                         + ".csv")
 
     options, args = parser.parse_args()
-    updateRate = options.u
-    runTime = options.r
-    timeLeft = runTime
+    updaterate = options.u
+    runtime = options.r
+    timeleft = runtime
     filename = options.f
-    ticks = int(round(runTime / updateRate)) * 33
+    ticks = int(round(runtime / updaterate)) * 33
 
-    ser = openserialport('/dev/pts/1')
-    # ser = openserialport('/dev/ttyACM0')
     sensdict = dict()
     logfile = openfile(filename)
     # enumerate sensors
@@ -165,15 +179,16 @@ def main():
 
     while True:
         line = str(ser.readline(), encoding='utf-8', errors='ignore')
-        s = line.split(":")
-        if s[0] not in sensdict:
-            print("Adding sensor id: " + s[0])
-            sensdict[s[0]] = {"temp": s[1], "ticks": ticks, "state": GOOD}
-        else:
-            if loops > 0:
-                loops -= 1
+        if len(line) > 0:
+            s = line.split(":")
+            if s[0] not in sensdict:
+                print("Adding sensor id: " + s[0])
+                sensdict[s[0]] = {"temp": s[1], "ticks": ticks, "state": GOOD}
             else:
-                break
+                if loops > 0:
+                    loops -= 1
+                else:
+                    break
 
     sensors = dict()
     for tmp1 in sorted(sensdict):
@@ -182,28 +197,52 @@ def main():
     print(sensorsstring(sensors))
     writecolumnheaders(logfile, sensors)
 
-    while not checkdone(sensors):
-        st = current_milli_time()
-        now = datetime.now().strftime("%H:%M:%S")
+    loggingready = True
+    return logfile
 
+def main():
+    global sensors
+    global timeleft
+    global loggingready
+    global loggingstarted
+    global loggingreset
+
+    ser = openserialport('/dev/pts/1')
+    # ser = openserialport('/dev/ttyACM0')
+    logfile = startlogging(ser)
+
+    while True:
         clearbuffer(ser)
-        for j in range(len(sensors)):
-            line = str(ser.readline(), 'utf-8', 'ignore')
-            s = line[:-1].split(":")
-            sensors[s[0]]["temp"] = s[1]
-        sensors = checktemps(sensors)
-        data = str(now) + "," + sensorsstring(sensors) + "\n"
-        print(data[:-1])
-        logfile.write(data)
-        sensors = ticksLeft(sensors)
-        et = current_milli_time()
-        rt = et - st
-        if rt > 0:
-            waitforupdate((updateRate * 1000 - rt) / 1000, ser)
+        if loggingstarted:
+            if loggingreset:
+                logfile.close()
+                logfile = startlogging(ser)
+                loggingreset = False
+            elif loggingready:
+                if not checkdone(sensors):
+                    st = current_milli_time()
+                    now = datetime.now().strftime("%H:%M:%S")
+                    for j in range(len(sensors)):
+                        line = str(ser.readline(), 'utf-8', 'ignore')
+                        s = line[:-1].split(":")
+                        sensors[s[0]]["temp"] = s[1]
+                    sensors = checktemps(sensors)
+                    data = str(now) + "," + sensorsstring(sensors) + "\n"
+                    print(data[:-1])
+                    logfile.write(data)
+                    sensors = ticksleft(sensors)
+                    et = current_milli_time()
+                    rt = et - st
+                    if rt > 0:
+                        waitforupdate((updaterate * 1000 - rt) / 1000, ser)
+                else:
+                    timeleft = 0
+                    logfile.close()
+                    logfile = startlogging(ser)
+        else:
+            sleep(0.01)
 
-    timeLeft = 0
     ser.close()
-    logfile.close()
 
 
 if __name__ == '__main__':

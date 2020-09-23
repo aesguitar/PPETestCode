@@ -1,5 +1,4 @@
 import PySimpleGUI as sg
-import serial
 import threading
 from time import sleep
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
@@ -22,6 +21,7 @@ colorswitcher = {
     Code.FileIO.HIGH_FAIL: "red",
     Code.FileIO.COMPLETE: "purple"
 }
+
 
 # def getnumsensors(devname):
 #     ser = serial.Serial(devname, 9600, rtscts=True, dsrdtr=True, timeout=1)
@@ -47,10 +47,12 @@ colorswitcher = {
 #     ser.close()
 #     return len(sensors)
 
+
 def getnumsensors():
-    while len(Code.FileIO.sensors) == 0:
+    while not Code.FileIO.loggingready:
         sleep(0.01)
     return len(Code.FileIO.sensors)
+
 
 def chooseMode():
     mode = "dev"
@@ -67,6 +69,7 @@ def chooseMode():
     window.close()
     return mode
 
+
 def buildlayout(numsensors):
     # create row of sensor values dynamically
     sensortext = []
@@ -80,7 +83,7 @@ def buildlayout(numsensors):
     #for i in range(numsensors):
     #    sensorcanvases.append(sg.Canvas(size=(20, 20), key="-" + str(i + 1) + "CANVAS-"))
 
-    layout = [[sg.Button("Start")],
+    layout = [[sg.Button("Start"), sg.Button("Stop"), sg.Button("Reset")],
         [sg.Text("Sensor Outputs:")],
         [*sensortext],
         [*sensorvalues],
@@ -95,6 +98,7 @@ def main():
     loggerthread.daemon = True
     loggerthread.start()
 
+    # TODO: this currently doesn't do anything
     mode = chooseMode()
     serialname = ""
     if mode == "norm":
@@ -116,12 +120,21 @@ def main():
         event, values = window.read(timeout=50)
         #if event in (None, "-CANCEL-"): # must use key name for event
         #    break
-        for i in range (numsens):
-            #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
-            window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "unknown"))
-            window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "grey"))
-        window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format(round(Code.FileIO.timeLeft / 3600) % 60) + ":" + "{:0>2d}".format(round(Code.FileIO.timeLeft / 60) % 60) + ":" + "{:0>2d}".format(Code.FileIO.timeLeft % 60))
+        if event in (None, "Start"):
+            Code.FileIO.loggingstarted = True
+        if event in (None, "Stop"):
+            Code.FileIO.loggingstarted = False
+        if event in (None, "Reset"):
+            Code.FileIO.loggingstarted = True
+            Code.FileIO.loggingreset = True
+        if Code.FileIO.loggingstarted:
+            for i in range (numsens):
+                #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
+                window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "unknown"))
+                window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "grey"))
+            window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format(round(Code.FileIO.timeleft / 3600) % 60) + ":" + "{:0>2d}".format(round(Code.FileIO.timeleft / 60) % 60) + ":" + "{:0>2d}".format(round(Code.FileIO.timeleft % 60)))
     window.close()
+
 
 if __name__ == '__main__':
     main()
