@@ -132,7 +132,7 @@ def main():
                 #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
                 window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "unknown"))
                 window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "grey"))
-            window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format(round(Code.FileIO.timeleft / 3600) % 60) + ":" + "{:0>2d}".format(round(Code.FileIO.timeleft / 60) % 60) + ":" + "{:0>2d}".format(round(Code.FileIO.timeleft % 60)))
+            window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format(int(Code.FileIO.timeleft / 3600) % 60) + ":" + "{:0>2d}".format(int(Code.FileIO.timeleft / 60) % 60) + ":" + "{:0>2d}".format(round(Code.FileIO.timeleft % 60)))
     window.close()
 
 

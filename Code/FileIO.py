@@ -157,8 +157,8 @@ def startlogging(ser):
 
     parser = optparse.OptionParser(description="Temperature logging utility for the PPE Sterilization Project\nwith" +
                                                "SOMD Loves You.")
-    parser.add_option("-u", action="store", dest="u", type=float, default=.5)
-    parser.add_option("-r", action="store", dest="r", type=float, default=5)
+    parser.add_option("-u", action="store", dest="u", type=float, default=1)
+    parser.add_option("-r", action="store", dest="r", type=float, default=60)
     parser.add_option("-f", action="store", dest="f", type=str, default='../TestLogs/'
                                                                         + datetime.now().strftime("%y%m%d_%H%M%S")
                                                                         + ".csv")
@@ -207,7 +207,7 @@ def main():
     global loggingstarted
     global loggingreset
 
-    ser = openserialport('/dev/pts/1')
+    ser = openserialport('/dev/pts/3')
     # ser = openserialport('/dev/ttyACM0')
     logfile = startlogging(ser)
 
