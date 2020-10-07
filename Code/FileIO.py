@@ -117,7 +117,7 @@ def sensorsstring(sensors):
     tmpstr = ""
     for i in sensors.keys():
         tmpstr += sensors[i]["temp"] + "," + str(sensors[i]["ticks"]) + "," + str(sensors[i]["state"]) + ","
-    return tmpstr[:-1].replace("\n", "")
+    return tmpstr[:-1].replace("\r\n", "")
 
 
 def checkdone(sensors):
@@ -224,7 +224,7 @@ def main():
                     now = datetime.now().strftime("%H:%M:%S")
                     for j in range(len(sensors)):
                         line = str(ser.readline(), 'utf-8', 'ignore')
-                        s = line[:-1].split(":")
+                        s = line[:-2].split(":")  # -2 index because of /r/n (two character) line endings from the serial input
                         sensors[s[0]]["temp"] = s[1]
                     sensors = checktemps(sensors)
                     data = str(now) + "," + sensorsstring(sensors) + "\n"

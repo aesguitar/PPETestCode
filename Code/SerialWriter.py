@@ -50,7 +50,7 @@ def main():
         #     break
         ind = (i % numsensors) + 1
         sensors[ind] = readsensor(sensors, ind)
-        payload = str(ind) + ":" + str(sensors[ind]) + '\n'
+        payload = str(ind) + ":" + str(sensors[ind]) + '\r\n'
         # print(str(datetime.now()) + ": " + payload)
         data = bytearray(payload, encoding='utf-8')
         for d in data:

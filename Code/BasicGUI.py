@@ -4,22 +4,22 @@ from time import sleep
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 from matplotlib.figure import Figure
 
-import Code.FileIO
+import FileIO
 
 stateswitcher = {
-    Code.FileIO.LOW_FAIL: "low fail!",
-    Code.FileIO.LOW_WARN: "low warn",
-    Code.FileIO.GOOD: "good",
-    Code.FileIO.HIGH_FAIL: "high fail!",
-    Code.FileIO.COMPLETE: "complete"
+    FileIO.LOW_FAIL: "low fail!",
+    FileIO.LOW_WARN: "low warn",
+    FileIO.GOOD: "good",
+    FileIO.HIGH_FAIL: "high fail!",
+    FileIO.COMPLETE: "complete"
 }
 
 colorswitcher = {
-    Code.FileIO.LOW_FAIL: "blue",
-    Code.FileIO.LOW_WARN: "lightblue",
-    Code.FileIO.GOOD: "green",
-    Code.FileIO.HIGH_FAIL: "red",
-    Code.FileIO.COMPLETE: "purple"
+    FileIO.LOW_FAIL: "blue",
+    FileIO.LOW_WARN: "lightblue",
+    FileIO.GOOD: "green",
+    FileIO.HIGH_FAIL: "red",
+    FileIO.COMPLETE: "purple"
 }
 
 
@@ -49,9 +49,9 @@ colorswitcher = {
 
 
 def getnumsensors():
-    while not Code.FileIO.loggingready:
+    while not FileIO.loggingready:
         sleep(0.01)
-    return len(Code.FileIO.sensors)
+    return len(FileIO.sensors)
 
 
 def chooseMode():
@@ -94,7 +94,7 @@ def buildlayout(numsensors):
 
 
 def main():
-    loggerthread = threading.Thread(target=Code.FileIO.main, name="logging")
+    loggerthread = threading.Thread(target=FileIO.main, name="logging")
     loggerthread.daemon = True
     loggerthread.start()
 
@@ -121,18 +121,18 @@ def main():
         #if event in (None, "-CANCEL-"): # must use key name for event
         #    break
         if event in (None, "Start"):
-            Code.FileIO.loggingstarted = True
+            FileIO.loggingstarted = True
         if event in (None, "Stop"):
-            Code.FileIO.loggingstarted = False
+            FileIO.loggingstarted = False
         if event in (None, "Reset"):
-            Code.FileIO.loggingstarted = True
-            Code.FileIO.loggingreset = True
-        if Code.FileIO.loggingstarted:
+            FileIO.loggingstarted = True
+            FileIO.loggingreset = True
+        if FileIO.loggingstarted:
             for i in range (numsens):
                 #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
-                window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "unknown"))
-                window["-" + str(i + 1) + "TEMP-"].update(Code.FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(Code.FileIO.sensors[str(i + 1)]["state"], "grey"))
-            window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format((Code.FileIO.timeleft // 3600) % 60) + ":" + "{:0>2d}".format((Code.FileIO.timeleft // 60) % 60) + ":" + "{:0>2d}".format((Code.FileIO.timeleft % 60)))
+                window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(FileIO.sensors[str(i + 1)]["state"], "unknown"))
+                window["-" + str(i + 1) + "TEMP-"].update(FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(FileIO.sensors[str(i + 1)]["state"], "grey"))
+            window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format((FileIO.timeleft // 3600) % 60) + ":" + "{:0>2d}".format((FileIO.timeleft // 60) % 60) + ":" + "{:0>2d}".format((FileIO.timeleft % 60)))
 
     window.close()
 
