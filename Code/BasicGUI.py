@@ -128,11 +128,12 @@ def main():
             FileIO.loggingstarted = True
             FileIO.loggingreset = True
         if FileIO.loggingstarted:
-            for i in range (numsens):
-                #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
-                window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(FileIO.sensors[str(i + 1)]["state"], "unknown"))
-                window["-" + str(i + 1) + "TEMP-"].update(FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(FileIO.sensors[str(i + 1)]["state"], "grey"))
-            window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format((FileIO.timeleft // 3600) % 60) + ":" + "{:0>2d}".format((FileIO.timeleft // 60) % 60) + ":" + "{:0>2d}".format((FileIO.timeleft % 60)))
+            with FileIO.sensors_lock
+                for i in range (numsens):
+                    #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
+                    window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(FileIO.sensors[str(i + 1)]["state"], "unknown"))
+                    window["-" + str(i + 1) + "TEMP-"].update(FileIO.sensors[str(i + 1)]["temp"], background_color=colorswitcher.get(FileIO.sensors[str(i + 1)]["state"], "grey"))
+                window["-TIMEREMAINING-"].update("Time remaining: " + "{:0>2d}".format((FileIO.timeleft // 3600) % 60) + ":" + "{:0>2d}".format((FileIO.timeleft // 60) % 60) + ":" + "{:0>2d}".format((FileIO.timeleft % 60)))
 
     window.close()
 

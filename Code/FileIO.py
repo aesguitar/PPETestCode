@@ -1,5 +1,6 @@
 import optparse
 import serial
+import threading
 from datetime import datetime
 from time import sleep, time
 
@@ -29,6 +30,7 @@ timeleft = runtime
 
 # global sensor data dictionary
 sensors = {}
+sensors_lock = threading.Lock()
 
 current_milli_time = lambda: int(round(time() * 1000))
 
@@ -219,26 +221,27 @@ def main():
                 logfile = startlogging(ser)
                 loggingreset = False
             elif loggingready:
-                if not checkdone(sensors):
-                    st = current_milli_time()
-                    now = datetime.now().strftime("%H:%M:%S")
-                    for j in range(len(sensors)):
-                        line = str(ser.readline(), 'utf-8', 'ignore')
-                        s = line[:-2].split(":")  # -2 index because of /r/n (two character) line endings from the serial input
-                        sensors[s[0]]["temp"] = s[1]
-                    sensors = checktemps(sensors)
-                    data = str(now) + "," + sensorsstring(sensors) + "\n"
-                    print(data[:-1])
-                    logfile.write(data)
-                    sensors = ticksleft(sensors)
-                    et = current_milli_time()
-                    rt = et - st
-                    if rt > 0:
-                        waitforupdate((updaterate * 1000 - rt) / 1000, ser)
-                else:
-                    timeleft = 0
-                    logfile.close()
-                    logfile = startlogging(ser)
+                with sensors_lock
+                    if not checkdone(sensors):
+                        st = current_milli_time()
+                        now = datetime.now().strftime("%H:%M:%S")
+                        for j in range(len(sensors)):
+                            line = str(ser.readline(), 'utf-8', 'ignore')
+                            s = line[:-2].split(":")  # -2 index because of /r/n (two character) line endings from the serial input
+                            sensors[s[0]]["temp"] = s[1]
+                        sensors = checktemps(sensors)
+                        data = str(now) + "," + sensorsstring(sensors) + "\n"
+                        print(data[:-1])
+                        logfile.write(data)
+                        sensors = ticksleft(sensors)
+                        et = current_milli_time()
+                        rt = et - st
+                        if rt > 0:
+                            waitforupdate((updaterate * 1000 - rt) / 1000, ser)
+                    else:
+                        timeleft = 0
+                        logfile.close()
+                        logfile = startlogging(ser)
         else:
             sleep(0.01)
 
