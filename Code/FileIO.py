@@ -209,8 +209,8 @@ def main():
     global loggingstarted
     global loggingreset
 
-    ser = openserialport('/dev/pts/3')
-    # ser = openserialport('/dev/ttyACM0')
+    #ser = openserialport('/dev/pts/3')
+    ser = openserialport('/dev/ttyACM0')
     logfile = startlogging(ser)
 
     while True:
@@ -221,7 +221,7 @@ def main():
                 logfile = startlogging(ser)
                 loggingreset = False
             elif loggingready:
-                with sensors_lock
+                with sensors_lock:
                     if not checkdone(sensors):
                         st = current_milli_time()
                         now = datetime.now().strftime("%H:%M:%S")

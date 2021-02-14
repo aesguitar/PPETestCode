@@ -128,7 +128,7 @@ def main():
             FileIO.loggingstarted = True
             FileIO.loggingreset = True
         if FileIO.loggingstarted:
-            with FileIO.sensors_lock
+            with FileIO.sensors_lock:
                 for i in range (numsens):
                     #print(str(i) + " " + Code.FileIO.sensors[str(i)]["temp"] + "\n")
                     window["-" + str(i + 1) + "INFO-"].update(str(i + 1) + ": " + stateswitcher.get(FileIO.sensors[str(i + 1)]["state"], "unknown"))
