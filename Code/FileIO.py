@@ -167,7 +167,8 @@ def startlogging(ser):
 
     options, args = parser.parse_args()
     updaterate = options.u
-    runtime = options.r
+    # runtime = options.r
+    runtime = 60 * 30
     timeleft = runtime
     filename = options.f
     ticks = int(round(runtime / updaterate)) * 33
