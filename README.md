@@ -19,7 +19,10 @@ the following rules:
 3. If temperature is below a cold cut-off, the cycle pauses, but continues to record.
 
 TODO:
-1. Individual sensor cycle tracking
-2. Fractional tick at end of cycle
-3. GUI using the Matplotlib python module
-4. Notification/Alert for cycle abort/pause.
+1. Individual sensor cycle tracking (DONE)
+2. Fractional tick at end of cycle (DONE)
+3. GUI using the Matplotlib python module (DELAYED)
+4. Keep running average of measurements (spike filtering)
+5. Implement RPI config file for certain options
+6. Error detection and logging for overall system
+7. GUI alert for errors/problems
