@@ -17,6 +17,11 @@ void setup() {
 
 }
 
+/*
+ * Format dependencies:
+ *    sensor ids should range from 1,...,n
+ *    "[sensor id]: [value]\n"
+ */
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -29,7 +34,7 @@ void loop() {
   {
     reading = analogRead(read_pins[i]);
     temp = (double) reading * conv_fact;
-    message = String(i) + String(":") + String(temp) + String('\n');
+    message = String(i+1) + String(": ") + String(temp) + String('\n');
     Serial.print(message);
   }
 
