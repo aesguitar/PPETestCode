@@ -26,3 +26,4 @@ TODO:
 5. Implement RPI config file for certain options
 6. Error detection and logging for overall system
 7. GUI alert for errors/problems
+8. Configuration File (initial version)
