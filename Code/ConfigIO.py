@@ -36,7 +36,8 @@ def checkConfigFileExists():
 def writeNewConfig():
     if not checkConfigLocExists():
         os.makedirs(configloc)
-        
+    
+    setDefaultConfigValues()    
     f = open(configloc+configfile, 'w')
     def_config.write(f)
  
