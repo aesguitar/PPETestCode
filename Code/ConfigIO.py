@@ -24,46 +24,45 @@ def setDefaultConfigValues():
                              'DefaultUpdateRate':'1', #default update rate in hertz
                              'RunningAverageOn':'1', #enable running average in data collection; 1 = on; 0 = off
                              'RunningAverageInterval':'5'} #default samples per running average collection
-                             
+# Checks if the config file directory exists
 def checkConfigLocExists():
     return path.exists(configloc)
-     
+# Check if the config file exists
 def checkConfigFileExists():
     return path.exists(configloc+configfile)
 
+# writes a config file with default values
+# will create any necessary directories
 def writeNewConfig():
+    if not checkConfigLocExists():
+        os.makedirs(configloc)
+        
     f = open(configloc+configfile, 'w')
     def_config.write(f)
-    
+ 
+# reads an existing config file
+# returns the default config if the file does not exist
 def readConfigFile():
-    r_config.read(configloc+configfile)
+    try:
+        f = open(configloc+configfile,'x')
+        r_config.read_file(f)
+        return r_config
+    except OSError:
+        print("Config file does not exist at %s" % configloc+configfile)
+        setDefaultConfigValues()
+        return def_config
+        
 
 def main():
     setDefaultConfigValues()
     
-    if not checkConfigLocExists():
-        print("Writing config directory.")
-        try:
-            os.makedirs(configloc)
-        except OSError:
-            print("Creation of directory %s failed." % configloc)
-        
-        print("Writing config file.")
-        writeNewConfig()
-    else:
-        print("Config directory exists.")
-        if not checkConfigFileExists():
-            print("Writing config file.")
-            writeNewConfig()
-        else:
-            print("Config file exists.")
-            print("Reading...")
-            readConfigFile()
-            sections = r_config.sections()
-            for section in sections:
-                print("Section: %s" % str(section))
-                for key in r_config[section]:
-                    print("%s : %s" % (key,r_config[section][key]))
+    
+    c = readConfigFile()
+    sections = c.sections()
+    for section in sections:
+        print("Section: [%s]" % str(section))
+        for key in c[section]:
+            print("\t%s : %s" % (key,c[section][key]))
 
 
 if __name__ == '__main__':
