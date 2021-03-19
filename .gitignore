@@ -3,3 +3,5 @@
 /.idea/
 /TestLogs/
 /_pycache_/
+*.pyc
+*.ini
